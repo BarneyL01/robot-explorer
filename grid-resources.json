@@ -1,39 +1,109 @@
 {
   "gridResources": {
-    "0,0": { "food": 80, "metal": 10, "fuel": 10 },
-    "0,1": { "food": 70, "metal": 20, "fuel": 10 },
-    "0,2": { "food": 60, "metal": 30, "fuel": 10 },
-    "0,3": { "food": 50, "metal": 40, "fuel": 10 },
-    "0,4": { "food": 40, "metal": 50, "fuel": 10 },
+    "0,0": {
+      "weights": { "food": 8, "metal": 1, "fuel": 1 },
+      "amounts": { "food": 5, "metal": 3, "fuel": 2 }
+    },
+    "0,1": {
+      "weights": { "food": 7, "metal": 2, "fuel": 1 },
+      "amounts": { "food": 4, "metal": 4, "fuel": 2 }
+    },
+    "0,2": {
+      "weights": { "food": 6, "metal": 3, "fuel": 1 },
+      "amounts": { "food": 4, "metal": 5, "fuel": 2 }
+    },
+    "0,3": {
+      "weights": { "food": 5, "metal": 4, "fuel": 1 },
+      "amounts": { "food": 3, "metal": 6, "fuel": 2 }
+    },
+    "0,4": {
+      "weights": { "food": 4, "metal": 5, "fuel": 1 },
+      "amounts": { "food": 3, "metal": 7, "fuel": 2 }
+    },
 
-    "1,0": { "food": 75, "metal": 15, "fuel": 10 },
-    "1,1": { "food": 65, "metal": 25, "fuel": 10 },
-    "1,2": { "food": 55, "metal": 35, "fuel": 10 },
-    "1,3": { "food": 45, "metal": 45, "fuel": 10 },
-    "1,4": { "food": 35, "metal": 55, "fuel": 10 },
+    "1,0": {
+      "weights": { "food": 7, "metal": 2, "fuel": 1 },
+      "amounts": { "food": 5, "metal": 3, "fuel": 1 }
+    },
+    "1,1": {
+      "weights": { "food": 6, "metal": 3, "fuel": 1 },
+      "amounts": { "food": 4, "metal": 4, "fuel": 1 }
+    },
+    "1,2": {
+      "weights": { "food": 5, "metal": 4, "fuel": 1 },
+      "amounts": { "food": 4, "metal": 5, "fuel": 1 }
+    },
+    "1,3": {
+      "weights": { "food": 4, "metal": 5, "fuel": 1 },
+      "amounts": { "food": 3, "metal": 6, "fuel": 1 }
+    },
+    "1,4": {
+      "weights": { "food": 3, "metal": 6, "fuel": 1 },
+      "amounts": { "food": 3, "metal": 7, "fuel": 1 }
+    },
 
-    "2,0": { "food": 70, "metal": 10, "fuel": 20 },
-    "2,1": { "food": 60, "metal": 20, "fuel": 20 },
-    "2,2": { "food": 50, "metal": 30, "fuel": 20 },
-    "2,3": { "food": 40, "metal": 40, "fuel": 20 },
-    "2,4": { "food": 30, "metal": 50, "fuel": 20 },
+    "2,0": {
+      "weights": { "food": 7, "metal": 1, "fuel": 2 },
+      "amounts": { "food": 5, "metal": 2, "fuel": 3 }
+    },
+    "2,1": {
+      "weights": { "food": 6, "metal": 2, "fuel": 2 },
+      "amounts": { "food": 4, "metal": 3, "fuel": 4 }
+    },
+    "2,2": {
+      "weights": { "food": 5, "metal": 3, "fuel": 2 },
+      "amounts": { "food": 4, "metal": 4, "fuel": 5 }
+    },
+    "2,3": {
+      "weights": { "food": 4, "metal": 4, "fuel": 2 },
+      "amounts": { "food": 3, "metal": 5, "fuel": 6 }
+    },
+    "2,4": {
+      "weights": { "food": 3, "metal": 5, "fuel": 2 },
+      "amounts": { "food": 3, "metal": 6, "fuel": 7 }
+    },
 
-    "3,0": { "food": 65, "metal": 15, "fuel": 20 },
-    "3,1": { "food": 55, "metal": 25, "fuel": 20 },
-    "3,2": { "food": 45, "metal": 35, "fuel": 20 },
-    "3,3": { "food": 35, "metal": 45, "fuel": 20 },
-    "3,4": { "food": 25, "metal": 55, "fuel": 20 },
+    "3,0": {
+      "weights": { "food": 6, "metal": 2, "fuel": 2 },
+      "amounts": { "food": 5, "metal": 2, "fuel": 3 }
+    },
+    "3,1": {
+      "weights": { "food": 5, "metal": 3, "fuel": 2 },
+      "amounts": { "food": 4, "metal": 3, "fuel": 4 }
+    },
+    "3,2": {
+      "weights": { "food": 4, "metal": 4, "fuel": 2 },
+      "amounts": { "food": 4, "metal": 4, "fuel": 5 }
+    },
+    "3,3": {
+      "weights": { "food": 3, "metal": 5, "fuel": 2 },
+      "amounts": { "food": 3, "metal": 5, "fuel": 6 }
+    },
+    "3,4": {
+      "weights": { "food": 2, "metal": 6, "fuel": 2 },
+      "amounts": { "food": 3, "metal": 6, "fuel": 7 }
+    },
 
-    "4,0": { "food": 60, "metal": 10, "fuel": 30 },
-    "4,1": { "food": 50, "metal": 20, "fuel": 30 },
-    "4,2": { "food": 40, "metal": 30, "fuel": 30 },
-    "4,3": { "food": 30, "metal": 40, "fuel": 30 },
-    "4,4": { "food": 20, "metal": 50, "fuel": 30 }
-  },
-  "collectionAmount": {
-    "food": 5,
-    "metal": 3,
-    "fuel": 2
+    "4,0": {
+      "weights": { "food": 6, "metal": 1, "fuel": 3 },
+      "amounts": { "food": 5, "metal": 1, "fuel": 4 }
+    },
+    "4,1": {
+      "weights": { "food": 5, "metal": 2, "fuel": 3 },
+      "amounts": { "food": 4, "metal": 2, "fuel": 5 }
+    },
+    "4,2": {
+      "weights": { "food": 4, "metal": 3, "fuel": 3 },
+      "amounts": { "food": 4, "metal": 3, "fuel": 6 }
+    },
+    "4,3": {
+      "weights": { "food": 3, "metal": 4, "fuel": 3 },
+      "amounts": { "food": 3, "metal": 4, "fuel": 7 }
+    },
+    "4,4": {
+      "weights": { "food": 2, "metal": 5, "fuel": 3 },
+      "amounts": { "food": 3, "metal": 5, "fuel": 8 }
+    }
   },
   "collectionChance": 75
 }

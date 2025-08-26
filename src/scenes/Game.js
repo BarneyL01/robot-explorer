@@ -30,9 +30,9 @@ export class Game extends Phaser.Scene {
     this.gridCells = []; // Store references to grid cells for visual feedback
   }
 
- create() {
-   // Load grid resources configuration
-   this.loadGridResourcesConfig();
+ async create() {
+  // Load grid resources configuration
+  await this.loadGridResourcesConfig();
 
    // Track robot deployment status
    this.deployedRobots = [false, false];
@@ -130,22 +130,50 @@ export class Game extends Phaser.Scene {
     }
   }
 
-  loadGridResourcesConfig() {
-    // Load the JSON configuration file
-    fetch('grid-resources.json')
-      .then(response => response.json())
-      .then(data => {
-        this.gridResourcesConfig = data;
-      })
-      .catch(error => {
-        console.error('Error loading grid resources config:', error);
-        // Fallback configuration if JSON fails to load
-        this.gridResourcesConfig = {
-          gridResources: {},
-          collectionAmount: { food: 5, metal: 3, fuel: 2 },
-          collectionChance: 75
-        };
-      });
+  async loadGridResourcesConfig() {
+    try {
+      const response = await fetch('./grid-resources.json');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('Grid resources config loaded successfully:', data);
+      this.gridResourcesConfig = data;
+    } catch (error) {
+      console.error('Error loading grid resources config:', error);
+      // Comprehensive fallback configuration with all cells
+      this.gridResourcesConfig = {
+        gridResources: {
+          "0,0": { "weights": { "food": 8, "metal": 1, "fuel": 1 }, "amounts": { "food": 5, "metal": 3, "fuel": 2 } },
+          "0,1": { "weights": { "food": 7, "metal": 2, "fuel": 1 }, "amounts": { "food": 4, "metal": 4, "fuel": 2 } },
+          "0,2": { "weights": { "food": 6, "metal": 3, "fuel": 1 }, "amounts": { "food": 4, "metal": 5, "fuel": 2 } },
+          "0,3": { "weights": { "food": 5, "metal": 4, "fuel": 1 }, "amounts": { "food": 3, "metal": 6, "fuel": 2 } },
+          "0,4": { "weights": { "food": 4, "metal": 5, "fuel": 1 }, "amounts": { "food": 3, "metal": 7, "fuel": 2 } },
+          "1,0": { "weights": { "food": 7, "metal": 2, "fuel": 1 }, "amounts": { "food": 5, "metal": 3, "fuel": 1 } },
+          "1,1": { "weights": { "food": 6, "metal": 3, "fuel": 1 }, "amounts": { "food": 4, "metal": 4, "fuel": 1 } },
+          "1,2": { "weights": { "food": 5, "metal": 4, "fuel": 1 }, "amounts": { "food": 4, "metal": 5, "fuel": 1 } },
+          "1,3": { "weights": { "food": 4, "metal": 5, "fuel": 1 }, "amounts": { "food": 3, "metal": 6, "fuel": 1 } },
+          "1,4": { "weights": { "food": 3, "metal": 6, "fuel": 1 }, "amounts": { "food": 3, "metal": 7, "fuel": 1 } },
+          "2,0": { "weights": { "food": 7, "metal": 1, "fuel": 2 }, "amounts": { "food": 5, "metal": 2, "fuel": 3 } },
+          "2,1": { "weights": { "food": 6, "metal": 2, "fuel": 2 }, "amounts": { "food": 4, "metal": 3, "fuel": 4 } },
+          "2,2": { "weights": { "food": 5, "metal": 3, "fuel": 2 }, "amounts": { "food": 4, "metal": 4, "fuel": 5 } },
+          "2,3": { "weights": { "food": 4, "metal": 4, "fuel": 2 }, "amounts": { "food": 3, "metal": 5, "fuel": 6 } },
+          "2,4": { "weights": { "food": 3, "metal": 5, "fuel": 2 }, "amounts": { "food": 3, "metal": 6, "fuel": 7 } },
+          "3,0": { "weights": { "food": 6, "metal": 2, "fuel": 2 }, "amounts": { "food": 5, "metal": 2, "fuel": 3 } },
+          "3,1": { "weights": { "food": 5, "metal": 3, "fuel": 2 }, "amounts": { "food": 4, "metal": 3, "fuel": 4 } },
+          "3,2": { "weights": { "food": 4, "metal": 4, "fuel": 2 }, "amounts": { "food": 4, "metal": 4, "fuel": 5 } },
+          "3,3": { "weights": { "food": 3, "metal": 5, "fuel": 2 }, "amounts": { "food": 3, "metal": 5, "fuel": 6 } },
+          "3,4": { "weights": { "food": 2, "metal": 6, "fuel": 2 }, "amounts": { "food": 3, "metal": 6, "fuel": 7 } },
+          "4,0": { "weights": { "food": 6, "metal": 1, "fuel": 3 }, "amounts": { "food": 5, "metal": 1, "fuel": 4 } },
+          "4,1": { "weights": { "food": 5, "metal": 2, "fuel": 3 }, "amounts": { "food": 4, "metal": 2, "fuel": 5 } },
+          "4,2": { "weights": { "food": 4, "metal": 3, "fuel": 3 }, "amounts": { "food": 4, "metal": 3, "fuel": 6 } },
+          "4,3": { "weights": { "food": 3, "metal": 4, "fuel": 3 }, "amounts": { "food": 3, "metal": 4, "fuel": 7 } },
+          "4,4": { "weights": { "food": 2, "metal": 5, "fuel": 3 }, "amounts": { "food": 3, "metal": 5, "fuel": 8 } }
+        },
+        collectionChance: 75
+      };
+      console.log('Using fallback configuration');
+    }
   }
 
   createResourceDisplay() {
@@ -181,16 +209,23 @@ export class Game extends Phaser.Scene {
   collectResources(x, y, cell) {
     if (!this.gridResourcesConfig || !this.gridResourcesConfig.gridResources) {
       console.warn('Grid resources config not loaded yet');
+      this.actionsText.setText('Actions: Configuration loading... Please wait and try again');
       return;
     }
 
     const cellKey = `${x},${y}`;
+    console.log(`Attempting to collect from cell ${cellKey}`);
+
     const cellConfig = this.gridResourcesConfig.gridResources[cellKey];
 
-    if (!cellConfig) {
+    if (!cellConfig || !cellConfig.weights || !cellConfig.amounts) {
       console.warn(`No configuration found for cell ${cellKey}`);
+      console.log('Available cells:', Object.keys(this.gridResourcesConfig.gridResources));
+      this.actionsText.setText(`Actions: No configuration for cell ${cellKey}`);
       return;
     }
+
+    console.log(`Cell ${cellKey} config:`, cellConfig);
 
     // Check if collection succeeds based on global chance
     const collectionRoll = Math.random() * 100;
@@ -201,13 +236,16 @@ export class Game extends Phaser.Scene {
       return;
     }
 
-    // Determine which resource to collect based on cell probabilities
-    const resourceRoll = Math.random() * 100;
+    // Calculate total weight and determine which resource to collect
+    const weights = cellConfig.weights;
+    const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
+
+    const resourceRoll = Math.random() * totalWeight;
     let collectedResource = null;
     let cumulative = 0;
 
-    for (const [resource, chance] of Object.entries(cellConfig)) {
-      cumulative += chance;
+    for (const [resource, weight] of Object.entries(weights)) {
+      cumulative += weight;
       if (resourceRoll <= cumulative) {
         collectedResource = resource;
         break;
@@ -215,7 +253,7 @@ export class Game extends Phaser.Scene {
     }
 
     if (collectedResource) {
-      const amount = this.gridResourcesConfig.collectionAmount[collectedResource] || 1;
+      const amount = cellConfig.amounts[collectedResource] || 1;
       this.resources[collectedResource] += amount;
       this.updateResourceDisplay();
 
