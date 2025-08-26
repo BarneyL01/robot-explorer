@@ -23,20 +23,20 @@ export class Game extends Phaser.Scene {
     // Track robot deployment status
     this.deployedRobots = [false, false];
 
-    // Resource tracker text
-    this.resourceText = this.add.text(10, 10, 'Resources: 100', { fontSize: '20px', fill: '#fff' });
+    // Resource tracker text - adjusted for smaller screen
+    this.resourceText = this.add.text(10, 10, 'Resources: 100', { fontSize: '18px', fill: '#fff' });
 
-    // Create robot deployment slots
+    // Create robot deployment slots - optimized for 390px screen
     this.robotSlots = [];
     const startX = 10;
-    const startY = 50;
-    const slotSpacing = 70;
+    const startY = 40;
+    const slotSpacing = 55;
 
     for (let i = 0; i < 2; i++) {
-      let slotBg = this.add.rectangle(startX + i * slotSpacing, startY, 60, 60, 0x444444).setOrigin(0);
+      let slotBg = this.add.rectangle(startX + i * slotSpacing, startY, 45, 45, 0x444444).setOrigin(0);
       slotBg.setStrokeStyle(2, 0xffffff);
 
-      let robotIcon = this.add.image(startX + 30 + i * slotSpacing, startY + 30, 'robot').setDisplaySize(50, 50);
+      let robotIcon = this.add.image(startX + 22.5 + i * slotSpacing, startY + 22.5, 'robot').setDisplaySize(35, 35);
       robotIcon.setVisible(false);
 
       slotBg.setInteractive().on('pointerdown', () => {
@@ -49,11 +49,11 @@ export class Game extends Phaser.Scene {
       this.robotSlots.push({ slotBg, robotIcon });
     }
 
-    // Player actions text
-    this.actionsText = this.add.text(10, 120, 'Actions: Deploy robots by clicking slots', { fontSize: '18px', fill: '#eee' });
+    // Player actions text - adjusted for smaller screen
+    this.actionsText = this.add.text(10, 100, 'Actions: Deploy robots by clicking slots', { fontSize: '16px', fill: '#eee' });
 
-    // Create grid map container (hidden initially)
-    this.mapGrid = this.add.container(200, 50);
+    // Create grid map container (hidden initially) - positioned for 390px screen
+    this.mapGrid = this.add.container(30, 150);
     this.createGrid();
     this.mapGrid.setVisible(false);
   }
@@ -65,7 +65,7 @@ export class Game extends Phaser.Scene {
   createGrid() {
     const rows = 5;
     const cols = 5;
-    const tileSize = 60;
+    const tileSize = 65; // Optimized for 390px screen width
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
