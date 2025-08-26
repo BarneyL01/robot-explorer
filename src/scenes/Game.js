@@ -22,8 +22,9 @@ export class Game extends Phaser.Scene {
     this.resourceTexts = {};
     this.actionsText;
 
-    // Grid resource configuration
+    // Configuration files
     this.gridResourcesConfig;
+    this.layoutConfig;
 
     this.mapGrid;
     this.mapVisible = false;
@@ -31,8 +32,8 @@ export class Game extends Phaser.Scene {
   }
 
  async create() {
-  // Load grid resources configuration
-  await this.loadGridResourcesConfig();
+  // Load configuration files
+  await this.loadConfigs();
 
    // Track robot deployment status
    this.deployedRobots = [false, false];
@@ -47,17 +48,20 @@ export class Game extends Phaser.Scene {
    // Create resource display texts
    this.createResourceDisplay();
 
-    // Create robot deployment slots - optimized for 360px screen
+    // Create robot deployment slots - using layout config
     this.robotSlots = [];
-    const startX = 10;
-    const startY = 40;
-    const slotSpacing = 55;
+    const layout = this.layoutConfig.robotSlots;
+    const startX = layout.x;
+    const startY = layout.y;
+    const slotSpacing = layout.slotSpacing;
+    const slotSize = layout.slotSize;
+    const robotIconSize = layout.robotIconSize;
 
     for (let i = 0; i < 2; i++) {
-      let slotBg = this.add.rectangle(startX + i * slotSpacing, startY, 45, 45, 0x444444).setOrigin(0);
+      let slotBg = this.add.rectangle(startX + i * slotSpacing, startY, slotSize, slotSize, 0x444444).setOrigin(0);
       slotBg.setStrokeStyle(2, 0xffffff);
 
-      let robotIcon = this.add.image(startX + 22.5 + i * slotSpacing, startY + 22.5, 'robot').setDisplaySize(35, 35);
+      let robotIcon = this.add.image(startX + slotSize/2 + i * slotSpacing, startY + slotSize/2, 'robot').setDisplaySize(robotIconSize, robotIconSize);
       robotIcon.setVisible(false);
 
       slotBg.setInteractive().on('pointerdown', () => {
@@ -70,15 +74,17 @@ export class Game extends Phaser.Scene {
       this.robotSlots.push({ slotBg, robotIcon });
     }
 
-    // Player actions text - adjusted for 360px screen with text wrapping
-    this.actionsText = this.add.text(10, 100, 'Actions: Deploy robots by clicking slots', {
-      fontSize: '16px',
+    // Player actions text - using layout config
+    const actionsLayout = this.layoutConfig.actionsText;
+    this.actionsText = this.add.text(actionsLayout.x, actionsLayout.y, 'Actions: Deploy robots by clicking slots', {
+      fontSize: `${actionsLayout.fontSize}px`,
       fill: '#eee',
-      wordWrap: { width: 340, useAdvancedWrap: true }
+      wordWrap: { width: actionsLayout.wordWrapWidth, useAdvancedWrap: true }
     });
 
-    // Create grid map container (hidden initially) - positioned for 360px screen
-    this.mapGrid = this.add.container(30, 150);
+    // Create grid map container (hidden initially) - using layout config
+    const gridLayout = this.layoutConfig.grid;
+    this.mapGrid = this.add.container(gridLayout.x, gridLayout.y);
     this.createGrid();
     this.mapGrid.setVisible(false);
   }
@@ -90,14 +96,16 @@ export class Game extends Phaser.Scene {
   createGrid() {
     const rows = 5;
     const cols = 5;
-    const tileSize = 60; // Optimized for 360px screen width
+    const gridLayout = this.layoutConfig.grid;
+    const tileSize = gridLayout.tileSize;
+    const tileSpacing = gridLayout.tileSpacing;
 
     this.gridCells = []; // Reset grid cells array
 
     for (let y = 0; y < rows; y++) {
       this.gridCells[y] = [];
       for (let x = 0; x < cols; x++) {
-        const cell = this.add.rectangle(x * tileSize, y * tileSize, tileSize - 2, tileSize - 2, 0x666666).setOrigin(0);
+        const cell = this.add.rectangle(x * (tileSize + tileSpacing), y * (tileSize + tileSpacing), tileSize, tileSize, 0x666666).setOrigin(0);
         cell.setStrokeStyle(1, 0x999999);
         cell.setInteractive();
 
@@ -130,18 +138,30 @@ export class Game extends Phaser.Scene {
     }
   }
 
-  async loadGridResourcesConfig() {
+  async loadConfigs() {
     try {
-      const response = await fetch('./grid-resources.json');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Load grid resources config
+      const gridResponse = await fetch('./grid-resources.json');
+      if (!gridResponse.ok) {
+        throw new Error(`Grid resources HTTP error! status: ${gridResponse.status}`);
       }
-      const data = await response.json();
-      console.log('Grid resources config loaded successfully:', data);
-      this.gridResourcesConfig = data;
+      const gridData = await gridResponse.json();
+      console.log('Grid resources config loaded successfully:', gridData);
+      this.gridResourcesConfig = gridData;
+
+      // Load layout config
+      const layoutResponse = await fetch('./layout.json');
+      if (!layoutResponse.ok) {
+        throw new Error(`Layout HTTP error! status: ${layoutResponse.status}`);
+      }
+      const layoutData = await layoutResponse.json();
+      console.log('Layout config loaded successfully:', layoutData);
+      this.layoutConfig = layoutData;
+
     } catch (error) {
-      console.error('Error loading grid resources config:', error);
-      // Comprehensive fallback configuration with all cells
+      console.error('Error loading configurations:', error);
+
+      // Fallback configurations
       this.gridResourcesConfig = {
         gridResources: {
           "0,0": { "weights": { "food": 8, "metal": 1, "fuel": 1 }, "amounts": { "food": 5, "metal": 3, "fuel": 2 } },
@@ -172,11 +192,20 @@ export class Game extends Phaser.Scene {
         },
         collectionChance: 75
       };
-      console.log('Using fallback configuration');
+
+      this.layoutConfig = {
+        resourceDisplay: { x: 10, y: 10, lineSpacing: 20, fontSize: 14 },
+        robotSlots: { x: 10, y: 90, slotSize: 45, slotSpacing: 55, robotIconSize: 35 },
+        actionsText: { x: 10, y: 150, fontSize: 16, wordWrapWidth: 340 },
+        grid: { x: 30, y: 200, tileSize: 60, tileSpacing: 2 }
+      };
+
+      console.log('Using fallback configurations');
     }
   }
 
   createResourceDisplay() {
+    const layout = this.layoutConfig.resourceDisplay;
     const resourceTypes = ['food', 'metal', 'fuel'];
     const colors = {
       food: '#90EE90',   // Light green
@@ -185,10 +214,12 @@ export class Game extends Phaser.Scene {
     };
 
     resourceTypes.forEach((type, index) => {
-      this.resourceTexts[type] = this.add.text(10, 10 + index * 20,
+      this.resourceTexts[type] = this.add.text(
+        layout.x,
+        layout.y + index * layout.lineSpacing,
         `${type.charAt(0).toUpperCase() + type.slice(1)}: ${this.resources[type]}`,
         {
-          fontSize: '14px',
+          fontSize: `${layout.fontSize}px`,
           fill: colors[type],
           wordWrap: { width: 150, useAdvancedWrap: true }
         }
@@ -207,8 +238,8 @@ export class Game extends Phaser.Scene {
   }
 
   collectResources(x, y, cell) {
-    if (!this.gridResourcesConfig || !this.gridResourcesConfig.gridResources) {
-      console.warn('Grid resources config not loaded yet');
+    if (!this.gridResourcesConfig || !this.gridResourcesConfig.gridResources || !this.layoutConfig) {
+      console.warn('Configuration not loaded yet');
       this.actionsText.setText('Actions: Configuration loading... Please wait and try again');
       return;
     }
