@@ -26,7 +26,7 @@ export class Game extends Phaser.Scene {
     // Resource tracker text - adjusted for smaller screen
     this.resourceText = this.add.text(10, 10, 'Resources: 100', { fontSize: '18px', fill: '#fff' });
 
-    // Create robot deployment slots - optimized for 390px screen
+    // Create robot deployment slots - optimized for 360px screen
     this.robotSlots = [];
     const startX = 10;
     const startY = 40;
@@ -49,10 +49,14 @@ export class Game extends Phaser.Scene {
       this.robotSlots.push({ slotBg, robotIcon });
     }
 
-    // Player actions text - adjusted for smaller screen
-    this.actionsText = this.add.text(10, 100, 'Actions: Deploy robots by clicking slots', { fontSize: '16px', fill: '#eee' });
+    // Player actions text - adjusted for 360px screen with text wrapping
+    this.actionsText = this.add.text(10, 100, 'Actions: Deploy robots by clicking slots', {
+      fontSize: '16px',
+      fill: '#eee',
+      wordWrap: { width: 340, useAdvancedWrap: true }
+    });
 
-    // Create grid map container (hidden initially) - positioned for 390px screen
+    // Create grid map container (hidden initially) - positioned for 360px screen
     this.mapGrid = this.add.container(30, 150);
     this.createGrid();
     this.mapGrid.setVisible(false);
@@ -65,7 +69,7 @@ export class Game extends Phaser.Scene {
   createGrid() {
     const rows = 5;
     const cols = 5;
-    const tileSize = 65; // Optimized for 390px screen width
+    const tileSize = 60; // Optimized for 360px screen width
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
