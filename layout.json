@@ -7,20 +7,20 @@
   },
   "robotSlots": {
     "x": 10,
-    "y": 90,
+    "y": 110,
     "slotSize": 45,
     "slotSpacing": 55,
     "robotIconSize": 35
   },
   "actionsText": {
     "x": 10,
-    "y": 150,
+    "y": 170,
     "fontSize": 16,
     "wordWrapWidth": 340
   },
   "grid": {
     "x": 30,
-    "y": 200,
+    "y": 220,
     "tileSize": 60,
     "tileSpacing": 2
   }
