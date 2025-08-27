@@ -5,13 +5,6 @@ export class Game extends Phaser.Scene {
   constructor() {
     super({ key: "Game" });
 
-    // this.boardSize = 4;
-    // this.tileSize = 100;
-    // this.tileSpacing = 10;
-    // this.tweenSpeed = 100;
-    // this.score = 0;
-    // this.canMove = false;
-    // this.movingTiles = 0;
     this.robotSlots;
     this.deployedRobots = [false];
 
