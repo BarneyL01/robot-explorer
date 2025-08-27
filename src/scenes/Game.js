@@ -1,3 +1,6 @@
+import { UIManager } from '../managers/UIManager.js';
+import { ActionManager } from '../managers/ActionManager.js';
+
 export class Game extends Phaser.Scene {
   constructor() {
     super({ key: "Game" });
@@ -40,11 +43,19 @@ export class Game extends Phaser.Scene {
     this.mapGrid;
     this.mapVisible = false;
     this.gridCells = []; // Store references to grid cells for visual feedback
+
+    // Initialize managers
+    this.uiManager = null;
+    this.actionManager = null;
   }
 
  async create() {
   // Load configuration files
   await this.loadConfigs();
+
+   // Initialize managers
+   this.uiManager = new UIManager(this);
+   this.actionManager = new ActionManager(this);
 
    // Track robot deployment status
    this.deployedRobots = [false];
@@ -57,10 +68,10 @@ export class Game extends Phaser.Scene {
    };
 
    // Create resource display texts
-   this.createResourceDisplay();
+   this.uiManager.createResourceDisplay();
 
    // Create Next Day button
-   this.createNextDayButton();
+   this.uiManager.createNextDayButton();
 
     // Create robot deployment slots - using layout config
     this.robotSlots = [];
@@ -79,7 +90,7 @@ export class Game extends Phaser.Scene {
       robotIcon.setVisible(false);
 
       slotBg.setInteractive().on('pointerdown', () => {
-        this.handleRobotDeployment(i, robotIcon);
+        this.actionManager.handleRobotDeployment(i, robotIcon);
       });
 
       this.robotSlots.push({ slotBg, robotIcon });
@@ -96,133 +107,14 @@ export class Game extends Phaser.Scene {
     // Create grid map container (hidden initially) - using layout config
     const gridLayout = this.layoutConfig.grid;
     this.mapGrid = this.add.container(gridLayout.x, gridLayout.y);
-    this.createGrid();
+    this.uiManager.createGrid();
     this.mapGrid.setVisible(false);
-  }
+ }
 
   update() {
     // Game update logic (if any)
   }
 
-  createGrid() {
-    const rows = 5;
-    const cols = 5;
-    const gridLayout = this.layoutConfig.grid;
-    const tileSize = gridLayout.tileSize;
-    const tileSpacing = gridLayout.tileSpacing;
-
-    this.gridCells = []; // Reset grid cells array
-
-    for (let y = 0; y < rows; y++) {
-      this.gridCells[y] = [];
-      for (let x = 0; x < cols; x++) {
-        if (x === 2 && y === 2) {
-          // Create home icon in center - don't store in gridCells array
-          const homeIcon = this.createHomeIcon(x * (tileSize + tileSpacing), y * (tileSize + tileSpacing), tileSize);
-          this.mapGrid.add(homeIcon);
-
-          // Add fuel cost display (0) for home base (added after home icon so it renders on top)
-          const homeCostText = this.add.text(
-            x * (tileSize + tileSpacing) + 3,
-            y * (tileSize + tileSpacing) + 3,
-            '0', {
-            fontSize: '12px',
-            fill: '#000000',
-            fontWeight: 'bold'
-          });
-          this.mapGrid.add(homeCostText);
-
-          this.gridCells[y][x] = null; // Mark as non-interactive
-        } else {
-          // Create regular grid cell
-          const cell = this.add.rectangle(x * (tileSize + tileSpacing), y * (tileSize + tileSpacing), tileSize, tileSize, 0x666666).setOrigin(0);
-          cell.setStrokeStyle(1, 0x999999);
-          cell.setInteractive();
-
-          // Store original color for visual feedback
-          cell.originalColor = 0x666666;
-
-          cell.on('pointerdown', () => {
-            if (this.mapGrid.visible) {
-              this.collectResources(x, y, cell);
-            }
-          });
-
-          this.gridCells[y][x] = cell;
-          this.mapGrid.add(cell);
-
-          // Calculate and display fuel cost for this cell (added after cell so it renders on top)
-          const fuelCost = this.calculateFuelCost(x, y);
-          const costText = this.add.text(
-            x * (tileSize + tileSpacing) + 3,
-            y * (tileSize + tileSpacing) + 3,
-            fuelCost.toString(), {
-            fontSize: '12px',
-            fill: '#000000',
-            fontWeight: 'bold'
-          });
-          this.mapGrid.add(costText);
-        }
-      }
-    }
-  }
-
-  calculateFuelCost(x, y) {
-    // Calculate Manhattan distance from home base (2,2)
-    const distance = Math.abs(x - 2) + Math.abs(y - 2);
-    // Fuel cost equals distance (home = 0, adjacent = 1, corners = 4)
-    return distance;
-  }
-
-  createHomeIcon(x, y, tileSize) {
-    const homeContainer = this.add.container(x, y);
-
-    // Create house base
-    const houseBase = this.add.rectangle(tileSize/2, tileSize * 0.7, tileSize * 0.8, tileSize * 0.5, 0x8B4513).setOrigin(0.5);
-    homeContainer.add(houseBase);
-
-    // Create roof
-    const roof = this.add.triangle(tileSize/2, tileSize * 0.2, tileSize * 0.1, tileSize * 0.7, tileSize/2, tileSize * 0.1, tileSize * 0.9, tileSize * 0.7, 0xDC143C).setOrigin(0.5);
-    homeContainer.add(roof);
-
-    // Create door
-    const door = this.add.rectangle(tileSize/2, tileSize * 0.8, tileSize * 0.2, tileSize * 0.3, 0x654321).setOrigin(0.5);
-    homeContainer.add(door);
-
-    // Add home label
-    const homeLabel = this.add.text(tileSize/2, tileSize + 8, 'HOME', {
-      fontSize: '10px',
-      fill: '#ffffff',
-      align: 'center'
-    }).setOrigin(0.5);
-    homeContainer.add(homeLabel);
-
-    // Disable all input interactions on the container
-    homeContainer.inputEnabled = false;
-    homeContainer.input = null;
-
-    return homeContainer;
-  }
-
-  updateMapVisibility() {
-    const anyDeployed = this.deployedRobots.some(deployed => deployed === true);
-    this.mapGrid.setVisible(anyDeployed);
-  }
-
-  updateActionsText() {
-    const deployedCount = this.deployedRobots.filter(Boolean).length;
-    const remainingDeployments = this.maxDeploymentsPerDay - this.deploymentsToday;
-
-    if (deployedCount === 0) {
-      if (remainingDeployments > 0) {
-        this.actionsText.setText(`Actions: Deploy robots (${remainingDeployments} actions left today)`);
-      } else {
-        this.actionsText.setText('Actions: Daily action limit reached - click "Next Day" to advance');
-      }
-    } else {
-      this.actionsText.setText(`Actions: ${deployedCount} robot(s) deployed - Click grid cells to collect resources (fuel cost varies by distance, ${remainingDeployments} left today)!`);
-    }
-  }
 
   async loadConfigs() {
     try {
@@ -291,283 +183,6 @@ export class Game extends Phaser.Scene {
     }
   }
 
-  createResourceDisplay() {
-    const layout = this.layoutConfig.resourceDisplay;
-    const resourceTypes = ['food', 'metal', 'fuel'];
-    const colors = {
-      food: '#90EE90',   // Light green
-      metal: '#C0C0C0',  // Silver
-      fuel: '#FFD700'    // Gold
-    };
 
-    resourceTypes.forEach((type, index) => {
-      this.resourceTexts[type] = this.add.text(
-        layout.x,
-        layout.y + index * layout.lineSpacing,
-        `${type.charAt(0).toUpperCase() + type.slice(1)}: ${this.resources[type]}`,
-        {
-          fontSize: `${layout.fontSize}px`,
-          fill: colors[type],
-          wordWrap: { width: 150, useAdvancedWrap: true }
-        }
-      );
-    });
-
-    // Add deployment and day display
-    const deploymentY = layout.y + 4 * layout.lineSpacing;
-    this.deploymentText = this.add.text(
-      layout.x,
-      deploymentY,
-      `Deployments: ${this.deploymentsToday}/${this.maxDeploymentsPerDay}`,
-      {
-        fontSize: `${layout.fontSize}px`,
-        fill: '#ffffff',
-        wordWrap: { width: 200, useAdvancedWrap: true }
-      }
-    );
-
-    this.dayText = this.add.text(
-      layout.x + 200,
-      deploymentY,
-      `Day: ${this.currentDay}`,
-      {
-        fontSize: `${layout.fontSize}px`,
-        fill: '#ffff00',
-        wordWrap: { width: 100, useAdvancedWrap: true }
-      }
-    );
-  }
-
-  updateResourceDisplay() {
-    Object.keys(this.resourceTexts).forEach(type => {
-      if (this.resourceTexts[type]) {
-        this.resourceTexts[type].setText(
-          `${type.charAt(0).toUpperCase() + type.slice(1)}: ${this.resources[type]}`
-        );
-      }
-    });
-  }
-
-  updateDeploymentDisplay() {
-    if (this.deploymentText) {
-      this.deploymentText.setText(`Deployments: ${this.deploymentsToday}/${this.maxDeploymentsPerDay}`);
-    }
-  }
-
-  updateDayDisplay() {
-    if (this.dayText) {
-      this.dayText.setText(`Day: ${this.currentDay}`);
-    }
-  }
-
-  createNextDayButton() {
-    const layout = this.layoutConfig.nextDayButton;
-
-    this.nextDayButton = this.add.text(
-      layout.x,
-      layout.y,
-      'Next Day',
-      {
-        fontSize: `${layout.fontSize}px`,
-        fill: '#ffffff',
-        backgroundColor: '#444444',
-        padding: { x: 10, y: 5 }
-      }
-    ).setInteractive();
-
-    this.nextDayButton.on('pointerdown', () => {
-      this.handleNextDay();
-    });
-
-    this.nextDayButton.on('pointerover', () => {
-      this.nextDayButton.setBackgroundColor('#666666');
-    });
-
-    this.nextDayButton.on('pointerout', () => {
-      this.nextDayButton.setBackgroundColor('#444444');
-    });
-  }
-
-  handleNextDay() {
-    const remainingDeployments = this.maxDeploymentsPerDay - this.deploymentsToday;
-
-    if (remainingDeployments > 0 && !this.nextDayConfirmationPending) {
-      // First click with remaining deployments - ask for confirmation
-      this.nextDayConfirmationPending = true;
-      this.nextDayButton.setText('CONFIRM?');
-      this.nextDayButton.setBackgroundColor('#ff4444');
-      this.actionsText.setText(`Warning: You have ${remainingDeployments} deployment(s) remaining. Click CONFIRM to advance anyway.`);
-      return;
-    }
-
-    if (this.nextDayConfirmationPending) {
-      // Second click - confirmed, advance to next day
-      this.nextDayConfirmationPending = false;
-      this.nextDayButton.setText('Next Day');
-      this.nextDayButton.setBackgroundColor('#444444');
-      this.consumeDailyFood();
-      return;
-    }
-
-    // No remaining deployments, advance immediately
-    this.consumeDailyFood();
-  }
-
-  handleRobotDeployment(slotIndex, robotIcon) {
-    const isCurrentlyDeployed = this.deployedRobots[slotIndex];
-
-    if (isCurrentlyDeployed) {
-      // Undeploying robot - no cost
-      this.deployedRobots[slotIndex] = false;
-      robotIcon.setVisible(false);
-      this.updateMapVisibility();
-      this.updateActionsText();
-      return;
-    }
-
-    // Deploy robot - just selection, no fuel cost
-    this.deployedRobots[slotIndex] = true;
-    robotIcon.setVisible(true);
-
-    this.updateMapVisibility();
-    this.updateActionsText();
-  }
-
-  consumeDailyFood() {
-    if (this.resources.food >= this.dailyFoodConsumption) {
-      this.resources.food -= this.dailyFoodConsumption;
-      this.updateResourceDisplay();
-
-      // Visual feedback for food consumption
-      this.actionsText.setText(`Day ${this.currentDay} ended - ${this.dailyFoodConsumption} food consumed`);
-
-      // Advance to next day and reset deployments
-      this.time.delayedCall(2000, () => {
-        this.advanceToNextDay();
-      });
-    } else {
-      this.actionsText.setText('Game Over: Not enough food to survive!');
-    }
-  }
-
-  advanceToNextDay() {
-    this.currentDay++;
-    this.deploymentsToday = 0;
-    this.nextDayConfirmationPending = false; // Reset confirmation state
-    this.nextDayButton.setText('Next Day'); // Reset button text
-    this.nextDayButton.setBackgroundColor('#444444'); // Reset button color
-    this.updateDayDisplay();
-    this.updateDeploymentDisplay();
-    this.updateActionsText();
-
-    // Reset robot deployments for new day
-    this.deployedRobots = [false];
-    this.robotSlots.forEach(slot => {
-      slot.robotIcon.setVisible(false);
-    });
-    this.mapGrid.setVisible(false);
-  }
-
-  collectResources(x, y, cell) {
-    if (!this.gridResourcesConfig || !this.gridResourcesConfig.gridResources || !this.layoutConfig) {
-      console.warn('Configuration not loaded yet');
-      this.actionsText.setText('Actions: Configuration loading... Please wait and try again');
-      return;
-    }
-
-    // Check if this is the home position (non-interactive)
-    if (x === 2 && y === 2) {
-      this.actionsText.setText('Actions: Cannot deploy to home base!');
-      return;
-    }
-
-    // Calculate fuel cost for this specific cell
-    const fuelCost = this.calculateFuelCost(x, y);
-
-    // Check fuel cost before deployment action
-    if (this.resources.fuel < fuelCost) {
-      this.actionsText.setText(`Actions: Not enough fuel (need ${fuelCost} fuel for this location)`);
-      return;
-    }
-
-    // Check deployment limits before collecting
-    if (this.deploymentsToday >= this.maxDeploymentsPerDay) {
-      this.actionsText.setText(`Actions: Daily deployment limit reached (${this.maxDeploymentsPerDay})`);
-      return;
-    }
-
-    // Consume fuel for this deployment action
-    this.resources.fuel -= fuelCost;
-    this.updateResourceDisplay();
-
-    // Count this as a deployment (happens regardless of success/failure)
-    this.deploymentsToday++;
-    this.updateDeploymentDisplay();
-
-    const cellKey = `${x},${y}`;
-    console.log(`Attempting to collect from cell ${cellKey}`);
-
-    const cellConfig = this.gridResourcesConfig.gridResources[cellKey];
-
-    if (!cellConfig || !cellConfig.weights || !cellConfig.amounts) {
-      console.warn(`No configuration found for cell ${cellKey}`);
-      console.log('Available cells:', Object.keys(this.gridResourcesConfig.gridResources));
-      this.actionsText.setText(`Actions: No configuration for cell ${cellKey}`);
-      return;
-    }
-
-    console.log(`Cell ${cellKey} config:`, cellConfig);
-
-    // Check if collection succeeds based on global chance
-    const collectionRoll = Math.random() * 100;
-    if (collectionRoll > this.gridResourcesConfig.collectionChance) {
-      // Visual feedback for failed collection
-      this.showCollectionFeedback(cell, false);
-      this.actionsText.setText('Actions: Collection failed - try another location');
-      return;
-    }
-
-    // Calculate total weight and determine which resource to collect
-    const weights = cellConfig.weights;
-    const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
-
-    const resourceRoll = Math.random() * totalWeight;
-    let collectedResource = null;
-    let cumulative = 0;
-
-    for (const [resource, weight] of Object.entries(weights)) {
-      cumulative += weight;
-      if (resourceRoll <= cumulative) {
-        collectedResource = resource;
-        break;
-      }
-    }
-
-    if (collectedResource) {
-      const amount = cellConfig.amounts[collectedResource] || 1;
-      this.resources[collectedResource] += amount;
-      this.updateResourceDisplay();
-
-      // Visual feedback for successful collection
-      this.showCollectionFeedback(cell, true);
-
-      this.actionsText.setText(`Actions: Collected ${amount} ${collectedResource}!`);
-    }
-  }
-
-  showCollectionFeedback(cell, success) {
-    const originalColor = cell.originalColor;
-    const feedbackColor = success ? 0x00ff00 : 0xff0000; // Green for success, red for failure
-
-    // Flash the cell color briefly
-    cell.setFillStyle(feedbackColor);
-
-    // Reset to original color after a short delay
-    this.time.delayedCall(300, () => {
-      if (cell && cell.setFillStyle) {
-        cell.setFillStyle(originalColor);
-      }
-    });
-  }
 }
 
