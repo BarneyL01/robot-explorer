@@ -64,10 +64,10 @@ export class Game extends Phaser.Scene {
 
    // Initialize starting resources
    this.resources = {
-     food: 10,
-     scrap: 5,
-     circuits: 0,
-     fuel: 3,
+     food: 100,
+     scrap: 50,
+     circuits: 10,
+     fuel: 30,
      steel: 0
    };
 
