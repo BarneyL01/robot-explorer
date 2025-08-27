@@ -28,7 +28,7 @@ export class UIManager {
     });
 
     // Add deployment and day display
-    const deploymentY = layout.y + 4 * layout.lineSpacing;
+    const deploymentY = layout.y + 5 * layout.lineSpacing;
     this.scene.deploymentText = this.scene.add.text(
       layout.x,
       deploymentY,
