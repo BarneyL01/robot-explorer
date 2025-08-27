@@ -24,6 +24,7 @@ export class Game extends Phaser.Scene {
     this.dayText;
     this.actionsText;
     this.nextDayButton;
+    this.nextDayConfirmationPending = false;
 
     // Configuration files
     this.gridResourcesConfig;
@@ -321,12 +322,25 @@ export class Game extends Phaser.Scene {
   handleNextDay() {
     const remainingDeployments = this.maxDeploymentsPerDay - this.deploymentsToday;
 
-    if (remainingDeployments > 0) {
-      this.actionsText.setText(`Warning: You have ${remainingDeployments} deployment(s) remaining. Advance anyway?`);
+    if (remainingDeployments > 0 && !this.nextDayConfirmationPending) {
+      // First click with remaining deployments - ask for confirmation
+      this.nextDayConfirmationPending = true;
+      this.nextDayButton.setText('CONFIRM?');
+      this.nextDayButton.setBackgroundColor('#ff4444');
+      this.actionsText.setText(`Warning: You have ${remainingDeployments} deployment(s) remaining. Click CONFIRM to advance anyway.`);
       return;
     }
 
-    // No remaining deployments, advance to next day
+    if (this.nextDayConfirmationPending) {
+      // Second click - confirmed, advance to next day
+      this.nextDayConfirmationPending = false;
+      this.nextDayButton.setText('Next Day');
+      this.nextDayButton.setBackgroundColor('#444444');
+      this.consumeDailyFood();
+      return;
+    }
+
+    // No remaining deployments, advance immediately
     this.consumeDailyFood();
   }
 
@@ -370,6 +384,9 @@ export class Game extends Phaser.Scene {
   advanceToNextDay() {
     this.currentDay++;
     this.deploymentsToday = 0;
+    this.nextDayConfirmationPending = false; // Reset confirmation state
+    this.nextDayButton.setText('Next Day'); // Reset button text
+    this.nextDayButton.setBackgroundColor('#444444'); // Reset button color
     this.updateDayDisplay();
     this.updateDeploymentDisplay();
     this.updateActionsText();
