@@ -25,7 +25,7 @@
   },
   "grid": {
     "x": 30,
-    "y": 220,
+    "y": 260,
     "tileSize": 60,
     "tileSpacing": 2
   }
