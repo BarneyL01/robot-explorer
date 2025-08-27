@@ -2,7 +2,7 @@
   "gridResources": {
     "0,0": {
       "weights": { "food": 0, "scrap": 0, "circuits": 10, "fuel": 0 },
-      "amounts": { "food": 6, "scrap": 6, "circuits": 2, "fuel": 6 }
+      "amounts": { "food": 6, "scrap": 6, "circuits": 1, "fuel": 6 }
     },
     "0,1": {
       "weights": { "food": 3, "scrap": 3, "circuits": 0, "fuel": 4 },

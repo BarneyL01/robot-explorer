@@ -163,7 +163,7 @@ export class Game extends Phaser.Scene {
           "4,3": { "weights": { "food": 3, "scrap": 4, "circuits": 0, "fuel": 3 }, "amounts": { "food": 8, "scrap": 9, "circuits": 1, "fuel": 9 } },
           "4,4": { "weights": { "food": 2, "scrap": 5, "circuits": 0, "fuel": 3 }, "amounts": { "food": 9, "scrap": 9, "circuits": 1, "fuel": 9 } }
         },
-        collectionChance: 75
+        collectionChance: 100
       };
 
       this.layoutConfig = {
