@@ -23,6 +23,7 @@ export class Game extends Phaser.Scene {
     this.deploymentText;
     this.dayText;
     this.actionsText;
+    this.nextDayButton;
 
     // Configuration files
     this.gridResourcesConfig;
@@ -56,6 +57,9 @@ export class Game extends Phaser.Scene {
 
    // Create resource display texts
    this.createResourceDisplay();
+
+   // Create Next Day button
+   this.createNextDayButton();
 
     // Create robot deployment slots - using layout config
     this.robotSlots = [];
@@ -141,12 +145,12 @@ export class Game extends Phaser.Scene {
 
     if (deployedCount === 0) {
       if (remainingDeployments > 0) {
-        this.actionsText.setText(`Actions: Deploy robots (${remainingDeployments} left today, costs ${this.deploymentCost} fuel each)`);
+        this.actionsText.setText(`Actions: Deploy robots (${remainingDeployments} actions left today)`);
       } else {
-        this.actionsText.setText('Actions: Daily deployment limit reached - wait for next day');
+        this.actionsText.setText('Actions: Daily action limit reached - click "Next Day" to advance');
       }
     } else {
-      this.actionsText.setText(`Actions: ${deployedCount} robot(s) deployed - Click grid cells to collect resources!`);
+      this.actionsText.setText(`Actions: ${deployedCount} robot(s) deployed - Click grid cells to collect resources (costs ${this.deploymentCost} fuel each, ${remainingDeployments} left today)!`);
     }
   }
 
@@ -207,9 +211,10 @@ export class Game extends Phaser.Scene {
 
       this.layoutConfig = {
         resourceDisplay: { x: 10, y: 10, lineSpacing: 20, fontSize: 14 },
-        robotSlots: { x: 10, y: 90, slotSize: 45, slotSpacing: 55, robotIconSize: 35 },
-        actionsText: { x: 10, y: 150, fontSize: 16, wordWrapWidth: 340 },
-        grid: { x: 30, y: 200, tileSize: 60, tileSpacing: 2 }
+        nextDayButton: { x: 10, y: 120, fontSize: 14 },
+        robotSlots: { x: 10, y: 150, slotSize: 45, slotSpacing: 55, robotIconSize: 35 },
+        actionsText: { x: 10, y: 190, fontSize: 16, wordWrapWidth: 340 },
+        grid: { x: 30, y: 240, tileSize: 60, tileSpacing: 2 }
       };
 
       console.log('Using fallback configurations');
@@ -285,6 +290,46 @@ export class Game extends Phaser.Scene {
     }
   }
 
+  createNextDayButton() {
+    const layout = this.layoutConfig.nextDayButton;
+
+    this.nextDayButton = this.add.text(
+      layout.x,
+      layout.y,
+      'Next Day',
+      {
+        fontSize: `${layout.fontSize}px`,
+        fill: '#ffffff',
+        backgroundColor: '#444444',
+        padding: { x: 10, y: 5 }
+      }
+    ).setInteractive();
+
+    this.nextDayButton.on('pointerdown', () => {
+      this.handleNextDay();
+    });
+
+    this.nextDayButton.on('pointerover', () => {
+      this.nextDayButton.setBackgroundColor('#666666');
+    });
+
+    this.nextDayButton.on('pointerout', () => {
+      this.nextDayButton.setBackgroundColor('#444444');
+    });
+  }
+
+  handleNextDay() {
+    const remainingDeployments = this.maxDeploymentsPerDay - this.deploymentsToday;
+
+    if (remainingDeployments > 0) {
+      this.actionsText.setText(`Warning: You have ${remainingDeployments} deployment(s) remaining. Advance anyway?`);
+      return;
+    }
+
+    // No remaining deployments, advance to next day
+    this.consumeDailyFood();
+  }
+
   handleRobotDeployment(slotIndex, robotIcon) {
     const isCurrentlyDeployed = this.deployedRobots[slotIndex];
 
@@ -297,33 +342,12 @@ export class Game extends Phaser.Scene {
       return;
     }
 
-    // Check deployment limits
-    if (this.deploymentsToday >= this.maxDeploymentsPerDay) {
-      this.actionsText.setText(`Actions: Daily deployment limit reached (${this.maxDeploymentsPerDay})`);
-      return;
-    }
-
-    // Check fuel cost
-    if (this.resources.fuel < this.deploymentCost) {
-      this.actionsText.setText(`Actions: Not enough fuel (need ${this.deploymentCost})`);
-      return;
-    }
-
-    // Deploy robot - costs fuel
-    this.resources.fuel -= this.deploymentCost;
+    // Deploy robot - just selection, no fuel cost
     this.deployedRobots[slotIndex] = true;
-    this.deploymentsToday++;
     robotIcon.setVisible(true);
 
-    this.updateResourceDisplay();
-    this.updateDeploymentDisplay();
     this.updateMapVisibility();
     this.updateActionsText();
-
-    // Check if this is the 2nd deployment - consume daily food
-    if (this.deploymentsToday >= this.maxDeploymentsPerDay) {
-      this.consumeDailyFood();
-    }
   }
 
   consumeDailyFood() {
@@ -364,6 +388,26 @@ export class Game extends Phaser.Scene {
       this.actionsText.setText('Actions: Configuration loading... Please wait and try again');
       return;
     }
+
+    // Check fuel cost before deployment action
+    if (this.resources.fuel < this.deploymentCost) {
+      this.actionsText.setText(`Actions: Not enough fuel (need ${this.deploymentCost} fuel per deployment)`);
+      return;
+    }
+
+    // Check deployment limits before collecting
+    if (this.deploymentsToday >= this.maxDeploymentsPerDay) {
+      this.actionsText.setText(`Actions: Daily deployment limit reached (${this.maxDeploymentsPerDay})`);
+      return;
+    }
+
+    // Consume fuel for this deployment action
+    this.resources.fuel -= this.deploymentCost;
+    this.updateResourceDisplay();
+
+    // Count this as a deployment (happens regardless of success/failure)
+    this.deploymentsToday++;
+    this.updateDeploymentDisplay();
 
     const cellKey = `${x},${y}`;
     console.log(`Attempting to collect from cell ${cellKey}`);

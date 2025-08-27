@@ -5,16 +5,21 @@
     "lineSpacing": 20,
     "fontSize": 14
   },
+  "nextDayButton": {
+    "x": 10,
+    "y": 120,
+    "fontSize": 14
+  },
   "robotSlots": {
     "x": 10,
-    "y": 110,
+    "y": 150,
     "slotSize": 45,
     "slotSpacing": 55,
     "robotIconSize": 35
   },
   "actionsText": {
     "x": 10,
-    "y": 170,
+    "y": 200,
     "fontSize": 16,
     "wordWrapWidth": 340
   },
