@@ -8,12 +8,18 @@ export class Game extends Phaser.Scene {
     this.robotSlots;
     this.deployedRobots = [false];
 
-    // Resource tracking for 4 types
+    // Resource tracking for 5 types
     this.resources = {
       food: 0,
       scrap: 0,
       circuits: 0,
-      fuel: 0
+      fuel: 0,
+      steel: 0
+    };
+
+    // Building tracking
+    this.buildings = {
+      refiner: 0
     };
 
     this.resourceTexts = {};
@@ -22,6 +28,8 @@ export class Game extends Phaser.Scene {
     this.actionsText;
     this.nextDayButton;
     this.nextDayConfirmationPending = false;
+    this.buildButton;
+    this.buildMenuVisible = false;
 
     // Configuration files
     this.gridResourcesConfig;
@@ -59,7 +67,8 @@ export class Game extends Phaser.Scene {
      food: 10,
      scrap: 5,
      circuits: 0,
-     fuel: 3
+     fuel: 3,
+     steel: 0
    };
 
    // Create resource display texts
@@ -67,6 +76,9 @@ export class Game extends Phaser.Scene {
 
    // Create Next Day button
    this.uiManager.createNextDayButton();
+
+   // Create Build button
+   this.uiManager.createBuildButton();
 
     // Create robot deployment slots - using layout config
     this.robotSlots = [];

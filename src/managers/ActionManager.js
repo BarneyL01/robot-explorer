@@ -176,4 +176,128 @@ export class ActionManager {
     });
     this.scene.mapGrid.setVisible(false);
   }
+
+  handleBuildMenu() {
+    if (this.scene.buildMenuVisible) {
+      // Hide build menu
+      this.scene.buildMenuVisible = false;
+      this.scene.actionsText.setText('Actions: Build menu closed');
+      // Remove build menu items if they exist
+      if (this.scene.refinerBuildButton) {
+        this.scene.refinerBuildButton.destroy();
+        this.scene.refinerBuildButton = null;
+      }
+      if (this.scene.refineButton) {
+        this.scene.refineButton.destroy();
+        this.scene.refineButton = null;
+      }
+    } else {
+      // Show build menu
+      this.scene.buildMenuVisible = true;
+      this.scene.actionsText.setText('Actions: Build Menu - Select an item to build');
+
+      // Create refiner build button
+      const layout = this.scene.layoutConfig.actionsText;
+      this.scene.refinerBuildButton = this.scene.add.text(
+        layout.x,
+        layout.y + 30,
+        'Build Refiner (20 scrap, 5 fuel, 2 circuits)',
+        {
+          fontSize: '14px',
+          fill: '#ffffff',
+          backgroundColor: '#228B22',
+          padding: { x: 10, y: 5 }
+        }
+      ).setInteractive();
+
+      this.scene.refinerBuildButton.on('pointerdown', () => {
+        this.buildRefiner();
+      });
+
+      this.scene.refinerBuildButton.on('pointerover', () => {
+        this.scene.refinerBuildButton.setBackgroundColor('#32CD32');
+      });
+
+      this.scene.refinerBuildButton.on('pointerout', () => {
+        this.scene.refinerBuildButton.setBackgroundColor('#228B22');
+      });
+
+      // Create refine button if refiners are available
+      if (this.scene.buildings.refiner > 0) {
+        this.scene.refineButton = this.scene.add.text(
+          layout.x,
+          layout.y + 60,
+          `Refine Steel (${this.scene.buildings.refiner} refiner(s) available)`,
+          {
+            fontSize: '14px',
+            fill: '#ffffff',
+            backgroundColor: '#8B4513',
+            padding: { x: 10, y: 5 }
+          }
+        ).setInteractive();
+
+        this.scene.refineButton.on('pointerdown', () => {
+          this.refineSteel();
+        });
+
+        this.scene.refineButton.on('pointerover', () => {
+          this.scene.refineButton.setBackgroundColor('#A0522D');
+        });
+
+        this.scene.refineButton.on('pointerout', () => {
+          this.scene.refineButton.setBackgroundColor('#8B4513');
+        });
+      }
+    }
+  }
+
+  buildRefiner() {
+    const costs = { scrap: 20, fuel: 5, circuits: 2 };
+
+    // Check if player has enough resources
+    for (const [resource, cost] of Object.entries(costs)) {
+      if (this.scene.resources[resource] < cost) {
+        this.scene.actionsText.setText(`Actions: Not enough ${resource} (need ${cost})`);
+        return;
+      }
+    }
+
+    // Deduct resources
+    for (const [resource, cost] of Object.entries(costs)) {
+      this.scene.resources[resource] -= cost;
+    }
+
+    // Build the refiner
+    this.scene.buildings.refiner++;
+    this.scene.uiManager.updateResourceDisplay();
+
+    this.scene.actionsText.setText(`Actions: Refiner built! (${this.scene.buildings.refiner} total)`);
+
+    // Refresh build menu if it's open to show refine option
+    if (this.scene.buildMenuVisible) {
+      this.handleBuildMenu();
+      this.scene.buildMenuVisible = true;
+      this.scene.actionsText.setText('Actions: Build Menu - Select an item to build');
+    }
+  }
+
+  refineSteel() {
+    if (this.scene.buildings.refiner <= 0) {
+      this.scene.actionsText.setText('Actions: No refiners available');
+      return;
+    }
+
+    const scrapNeeded = 3;
+    if (this.scene.resources.scrap < scrapNeeded) {
+      this.scene.actionsText.setText(`Actions: Not enough scrap (need ${scrapNeeded})`);
+      return;
+    }
+
+    // Consume scrap and produce steel
+    this.scene.resources.scrap -= scrapNeeded;
+    this.scene.resources.steel += 1;
+
+    this.scene.uiManager.updateResourceDisplay();
+    this.scene.actionsText.setText(`Actions: Refined 1 steel using ${scrapNeeded} scrap!`);
+  }
 }

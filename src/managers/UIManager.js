@@ -5,12 +5,13 @@ export class UIManager {
 
   createResourceDisplay() {
     const layout = this.scene.layoutConfig.resourceDisplay;
-    const resourceTypes = ['food', 'scrap', 'circuits', 'fuel'];
+    const resourceTypes = ['food', 'scrap', 'circuits', 'fuel', 'steel'];
     const colors = {
       food: '#90EE90',     // Light green
       scrap: '#696969',    // Dim gray
       circuits: '#4169E1', // Royal blue
-      fuel: '#FFD700'      // Gold
+      fuel: '#FFD700',     // Gold
+      steel: '#C0C0C0'     // Silver
     };
 
     resourceTypes.forEach((type, index) => {
@@ -76,6 +77,34 @@ export class UIManager {
 
     this.scene.nextDayButton.on('pointerout', () => {
       this.scene.nextDayButton.setBackgroundColor('#444444');
+    });
+  }
+
+  createBuildButton() {
+    const layout = this.scene.layoutConfig.nextDayButton;
+
+    this.scene.buildButton = this.scene.add.text(
+      layout.x + 120,
+      layout.y,
+      'Build',
+      {
+        fontSize: `${layout.fontSize}px`,
+        fill: '#ffffff',
+        backgroundColor: '#444444',
+        padding: { x: 10, y: 5 }
+      }
+    ).setInteractive();
+
+    this.scene.buildButton.on('pointerdown', () => {
+      this.scene.actionManager.handleBuildMenu();
+    });
+
+    this.scene.buildButton.on('pointerover', () => {
+      this.scene.buildButton.setBackgroundColor('#666666');
+    });
+
+    this.scene.buildButton.on('pointerout', () => {
+      this.scene.buildButton.setBackgroundColor('#444444');
     });
   }
 
