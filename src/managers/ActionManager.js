@@ -273,11 +273,32 @@ export class ActionManager {
 
     this.scene.actionsText.setText(`Actions: Refiner built! (${this.scene.buildings.refiner} total)`);
 
-    // Refresh build menu if it's open to show refine option
-    if (this.scene.buildMenuVisible) {
-      this.handleBuildMenu();
-      this.scene.buildMenuVisible = true;
-      this.scene.actionsText.setText('Actions: Build Menu - Select an item to build');
+    // Add refine button if build menu is open
+    if (this.scene.buildMenuVisible && !this.scene.refineButton) {
+      const layout = this.scene.layoutConfig.actionsText;
+      this.scene.refineButton = this.scene.add.text(
+        layout.x,
+        layout.y + 60,
+        `Refine Steel (${this.scene.buildings.refiner} refiner(s) available)`,
+        {
+          fontSize: '14px',
+          fill: '#ffffff',
+          backgroundColor: '#8B4513',
+          padding: { x: 10, y: 5 }
+        }
+      ).setInteractive();
+
+      this.scene.refineButton.on('pointerdown', () => {
+        this.refineSteel();
+      });
+
+      this.scene.refineButton.on('pointerover', () => {
+        this.scene.refineButton.setBackgroundColor('#A0522D');
+      });
+
+      this.scene.refineButton.on('pointerout', () => {
+        this.scene.refineButton.setBackgroundColor('#8B4513');
+      });
     }
   }
 
