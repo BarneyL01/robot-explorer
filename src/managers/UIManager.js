@@ -236,6 +236,56 @@ export class UIManager {
     } else {
       this.scene.actionsText.setText(`Actions: ${deployedCount} robot(s) deployed - Click grid cells to collect resources (fuel cost varies by distance, ${remainingDeployments} left today)!`);
     }
+
+    // Update refine button visibility
+    if (this.scene.buildings.refiner > 0) {
+      this.showRefineButton();
+    } else {
+      this.hideRefineButton();
+    }
+  }
+
+  createRefineButton() {
+    const layout = this.scene.layoutConfig.nextDayButton;
+
+    this.scene.refineButton = this.scene.add.text(
+      layout.x + 250,
+      layout.y,
+      'Refine Steel',
+      {
+        fontSize: `${layout.fontSize}px`,
+        fill: '#ffffff',
+        backgroundColor: '#8B4513',
+        padding: { x: 10, y: 5 }
+      }
+    ).setInteractive();
+
+    this.scene.refineButton.on('pointerdown', () => {
+      this.scene.actionManager.refineSteel();
+    });
+
+    this.scene.refineButton.on('pointerover', () => {
+      this.scene.refineButton.setBackgroundColor('#A0522D');
+    });
+
+    this.scene.refineButton.on('pointerout', () => {
+      this.scene.refineButton.setBackgroundColor('#8B4513');
+    });
+  }
+
+  showRefineButton() {
+    if (!this.scene.refineButton && this.scene.buildings.refiner > 0) {
+      this.createRefineButton();
+    }
+    if (this.scene.refineButton) {
+      this.scene.refineButton.setVisible(true);
+    }
+  }
+
+  hideRefineButton() {
+    if (this.scene.refineButton) {
+      this.scene.refineButton.setVisible(false);
+    }
   }
 
   updateMapVisibility() {

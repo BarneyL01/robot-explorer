@@ -30,6 +30,7 @@ export class Game extends Phaser.Scene {
     this.nextDayConfirmationPending = false;
     this.buildButton;
     this.buildMenuVisible = false;
+    this.refineButton;
 
     // Configuration files
     this.gridResourcesConfig;

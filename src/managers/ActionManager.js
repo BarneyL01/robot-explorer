@@ -187,67 +187,69 @@ export class ActionManager {
         this.scene.refinerBuildButton.destroy();
         this.scene.refinerBuildButton = null;
       }
-      if (this.scene.refineButton) {
-        this.scene.refineButton.destroy();
-        this.scene.refineButton = null;
+      if (this.scene.tbcBuildButton) {
+        this.scene.tbcBuildButton.destroy();
+        this.scene.tbcBuildButton = null;
       }
     } else {
       // Show build menu
       this.scene.buildMenuVisible = true;
       this.scene.actionsText.setText('Actions: Build Menu - Select an item to build');
 
-      // Create refiner build button
-      const layout = this.scene.layoutConfig.actionsText;
-      this.scene.refinerBuildButton = this.scene.add.text(
-        layout.x,
-        layout.y + 30,
-        'Build Refiner (20 scrap, 5 fuel, 2 circuits)',
-        {
-          fontSize: '14px',
-          fill: '#ffffff',
-          backgroundColor: '#228B22',
-          padding: { x: 10, y: 5 }
-        }
-      ).setInteractive();
-
-      this.scene.refinerBuildButton.on('pointerdown', () => {
-        this.buildRefiner();
-      });
-
-      this.scene.refinerBuildButton.on('pointerover', () => {
-        this.scene.refinerBuildButton.setBackgroundColor('#32CD32');
-      });
-
-      this.scene.refinerBuildButton.on('pointerout', () => {
-        this.scene.refinerBuildButton.setBackgroundColor('#228B22');
-      });
-
-      // Create refine button if refiners are available
-      if (this.scene.buildings.refiner > 0) {
-        this.scene.refineButton = this.scene.add.text(
+      // Create refiner build button only if no refiners built yet
+      if (this.scene.buildings.refiner === 0) {
+        const layout = this.scene.layoutConfig.actionsText;
+        this.scene.refinerBuildButton = this.scene.add.text(
           layout.x,
-          layout.y + 60,
-          `Refine Steel (${this.scene.buildings.refiner} refiner(s) available)`,
+          layout.y + 30,
+          'Build Refiner (20 scrap, 5 fuel, 2 circuits)',
           {
             fontSize: '14px',
             fill: '#ffffff',
-            backgroundColor: '#8B4513',
+            backgroundColor: '#228B22',
             padding: { x: 10, y: 5 }
           }
         ).setInteractive();
 
-        this.scene.refineButton.on('pointerdown', () => {
-          this.refineSteel();
+        this.scene.refinerBuildButton.on('pointerdown', () => {
+          this.buildRefiner();
         });
 
-        this.scene.refineButton.on('pointerover', () => {
-          this.scene.refineButton.setBackgroundColor('#A0522D');
+        this.scene.refinerBuildButton.on('pointerover', () => {
+          this.scene.refinerBuildButton.setBackgroundColor('#32CD32');
         });
 
-        this.scene.refineButton.on('pointerout', () => {
-          this.scene.refineButton.setBackgroundColor('#8B4513');
+        this.scene.refinerBuildButton.on('pointerout', () => {
+          this.scene.refinerBuildButton.setBackgroundColor('#228B22');
         });
       }
+
+      // Create TBC build option
+      const layout = this.scene.layoutConfig.actionsText;
+      const tbcButtonY = this.scene.buildings.refiner === 0 ? layout.y + 60 : layout.y + 30;
+      this.scene.tbcBuildButton = this.scene.add.text(
+        layout.x,
+        tbcButtonY,
+        'Build Other (TBC)',
+        {
+          fontSize: '14px',
+          fill: '#ffffff',
+          backgroundColor: '#666666',
+          padding: { x: 10, y: 5 }
+        }
+      ).setInteractive();
+
+      this.scene.tbcBuildButton.on('pointerdown', () => {
+        this.scene.actionsText.setText('Actions: This feature is coming soon!');
+      });
+
+      this.scene.tbcBuildButton.on('pointerover', () => {
+        this.scene.tbcBuildButton.setBackgroundColor('#999999');
+      });
+
+      this.scene.tbcBuildButton.on('pointerout', () => {
+        this.scene.tbcBuildButton.setBackgroundColor('#666666');
+      });
     }
   }
 
@@ -273,32 +275,14 @@ export class ActionManager {
 
     this.scene.actionsText.setText(`Actions: Refiner built! (${this.scene.buildings.refiner} total)`);
 
-    // Add refine button if build menu is open
-    if (this.scene.buildMenuVisible && !this.scene.refineButton) {
-      const layout = this.scene.layoutConfig.actionsText;
-      this.scene.refineButton = this.scene.add.text(
-        layout.x,
-        layout.y + 60,
-        `Refine Steel (${this.scene.buildings.refiner} refiner(s) available)`,
-        {
-          fontSize: '14px',
-          fill: '#ffffff',
-          backgroundColor: '#8B4513',
-          padding: { x: 10, y: 5 }
-        }
-      ).setInteractive();
+    // Show the refine button
+    this.scene.uiManager.showRefineButton();
 
-      this.scene.refineButton.on('pointerdown', () => {
-        this.refineSteel();
-      });
-
-      this.scene.refineButton.on('pointerover', () => {
-        this.scene.refineButton.setBackgroundColor('#A0522D');
-      });
-
-      this.scene.refineButton.on('pointerout', () => {
-        this.scene.refineButton.setBackgroundColor('#8B4513');
-      });
+    // If build menu is open, refresh it to remove the build refiner option
+    if (this.scene.buildMenuVisible) {
+      this.handleBuildMenu();
+      this.scene.buildMenuVisible = true;
+      this.scene.actionsText.setText('Actions: Build Menu - Select an item to build');
     }
   }
 
