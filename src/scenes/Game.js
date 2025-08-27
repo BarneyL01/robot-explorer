@@ -120,6 +120,18 @@ export class Game extends Phaser.Scene {
           // Create home icon in center - don't store in gridCells array
           const homeIcon = this.createHomeIcon(x * (tileSize + tileSpacing), y * (tileSize + tileSpacing), tileSize);
           this.mapGrid.add(homeIcon);
+
+          // Add fuel cost display (0) for home base (added after home icon so it renders on top)
+          const homeCostText = this.add.text(
+            x * (tileSize + tileSpacing) + 3,
+            y * (tileSize + tileSpacing) + 3,
+            '0', {
+            fontSize: '12px',
+            fill: '#000000',
+            fontWeight: 'bold'
+          });
+          this.mapGrid.add(homeCostText);
+
           this.gridCells[y][x] = null; // Mark as non-interactive
         } else {
           // Create regular grid cell
@@ -138,9 +150,28 @@ export class Game extends Phaser.Scene {
 
           this.gridCells[y][x] = cell;
           this.mapGrid.add(cell);
+
+          // Calculate and display fuel cost for this cell (added after cell so it renders on top)
+          const fuelCost = this.calculateFuelCost(x, y);
+          const costText = this.add.text(
+            x * (tileSize + tileSpacing) + 3,
+            y * (tileSize + tileSpacing) + 3,
+            fuelCost.toString(), {
+            fontSize: '12px',
+            fill: '#000000',
+            fontWeight: 'bold'
+          });
+          this.mapGrid.add(costText);
         }
       }
     }
+  }
+
+  calculateFuelCost(x, y) {
+    // Calculate Manhattan distance from home base (2,2)
+    const distance = Math.abs(x - 2) + Math.abs(y - 2);
+    // Fuel cost equals distance (home = 0, adjacent = 1, corners = 4)
+    return distance;
   }
 
   createHomeIcon(x, y, tileSize) {
@@ -189,7 +220,7 @@ export class Game extends Phaser.Scene {
         this.actionsText.setText('Actions: Daily action limit reached - click "Next Day" to advance');
       }
     } else {
-      this.actionsText.setText(`Actions: ${deployedCount} robot(s) deployed - Click grid cells to collect resources (costs ${this.deploymentCost} fuel each, ${remainingDeployments} left today)!`);
+      this.actionsText.setText(`Actions: ${deployedCount} robot(s) deployed - Click grid cells to collect resources (fuel cost varies by distance, ${remainingDeployments} left today)!`);
     }
   }
 
@@ -450,9 +481,12 @@ export class Game extends Phaser.Scene {
       return;
     }
 
+    // Calculate fuel cost for this specific cell
+    const fuelCost = this.calculateFuelCost(x, y);
+
     // Check fuel cost before deployment action
-    if (this.resources.fuel < this.deploymentCost) {
-      this.actionsText.setText(`Actions: Not enough fuel (need ${this.deploymentCost} fuel per deployment)`);
+    if (this.resources.fuel < fuelCost) {
+      this.actionsText.setText(`Actions: Not enough fuel (need ${fuelCost} fuel for this location)`);
       return;
     }
 
@@ -463,7 +497,7 @@ export class Game extends Phaser.Scene {
     }
 
     // Consume fuel for this deployment action
-    this.resources.fuel -= this.deploymentCost;
+    this.resources.fuel -= fuelCost;
     this.updateResourceDisplay();
 
     // Count this as a deployment (happens regardless of success/failure)
