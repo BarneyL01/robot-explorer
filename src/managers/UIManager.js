@@ -5,11 +5,12 @@ export class UIManager {
 
   createResourceDisplay() {
     const layout = this.scene.layoutConfig.resourceDisplay;
-    const resourceTypes = ['food', 'metal', 'fuel'];
+    const resourceTypes = ['food', 'scrap', 'circuits', 'fuel'];
     const colors = {
-      food: '#90EE90',   // Light green
-      metal: '#C0C0C0',  // Silver
-      fuel: '#FFD700'    // Gold
+      food: '#90EE90',     // Light green
+      scrap: '#696969',    // Dim gray
+      circuits: '#4169E1', // Royal blue
+      fuel: '#FFD700'      // Gold
     };
 
     resourceTypes.forEach((type, index) => {
