@@ -10,7 +10,7 @@ export class Game extends Phaser.Scene {
     // this.canMove = false;
     // this.movingTiles = 0;
     this.robotSlots;
-    this.deployedRobots = [false, false];
+    this.deployedRobots = [false];
 
     // Resource tracking for 3 types
     this.resources = {
@@ -30,7 +30,7 @@ export class Game extends Phaser.Scene {
 
     // Deployment and day tracking
     this.deploymentsToday = 0;
-    this.maxDeploymentsPerDay = 2;
+    this.maxDeploymentsPerDay = 1;
     this.currentDay = 1;
     this.deploymentCost = 1; // fuel per deployment
     this.dailyFoodConsumption = 1;
@@ -45,7 +45,7 @@ export class Game extends Phaser.Scene {
   await this.loadConfigs();
 
    // Track robot deployment status
-   this.deployedRobots = [false, false];
+   this.deployedRobots = [false];
 
    // Initialize starting resources
    this.resources = {
@@ -66,7 +66,7 @@ export class Game extends Phaser.Scene {
     const slotSize = layout.slotSize;
     const robotIconSize = layout.robotIconSize;
 
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 1; i++) {
       let slotBg = this.add.rectangle(startX + i * slotSpacing, startY, slotSize, slotSize, 0x444444).setOrigin(0);
       slotBg.setStrokeStyle(2, 0xffffff);
 
@@ -351,7 +351,7 @@ export class Game extends Phaser.Scene {
     this.updateActionsText();
 
     // Reset robot deployments for new day
-    this.deployedRobots = [false, false];
+    this.deployedRobots = [false];
     this.robotSlots.forEach(slot => {
       slot.robotIcon.setVisible(false);
     });
