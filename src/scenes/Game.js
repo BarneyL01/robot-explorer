@@ -116,23 +116,61 @@ export class Game extends Phaser.Scene {
     for (let y = 0; y < rows; y++) {
       this.gridCells[y] = [];
       for (let x = 0; x < cols; x++) {
-        const cell = this.add.rectangle(x * (tileSize + tileSpacing), y * (tileSize + tileSpacing), tileSize, tileSize, 0x666666).setOrigin(0);
-        cell.setStrokeStyle(1, 0x999999);
-        cell.setInteractive();
+        if (x === 2 && y === 2) {
+          // Create home icon in center - don't store in gridCells array
+          const homeIcon = this.createHomeIcon(x * (tileSize + tileSpacing), y * (tileSize + tileSpacing), tileSize);
+          this.mapGrid.add(homeIcon);
+          this.gridCells[y][x] = null; // Mark as non-interactive
+        } else {
+          // Create regular grid cell
+          const cell = this.add.rectangle(x * (tileSize + tileSpacing), y * (tileSize + tileSpacing), tileSize, tileSize, 0x666666).setOrigin(0);
+          cell.setStrokeStyle(1, 0x999999);
+          cell.setInteractive();
 
-        // Store original color for visual feedback
-        cell.originalColor = 0x666666;
+          // Store original color for visual feedback
+          cell.originalColor = 0x666666;
 
-        cell.on('pointerdown', () => {
-          if (this.mapGrid.visible) {
-            this.collectResources(x, y, cell);
-          }
-        });
+          cell.on('pointerdown', () => {
+            if (this.mapGrid.visible) {
+              this.collectResources(x, y, cell);
+            }
+          });
 
-        this.gridCells[y][x] = cell;
-        this.mapGrid.add(cell);
+          this.gridCells[y][x] = cell;
+          this.mapGrid.add(cell);
+        }
       }
     }
+  }
+
+  createHomeIcon(x, y, tileSize) {
+    const homeContainer = this.add.container(x, y);
+
+    // Create house base
+    const houseBase = this.add.rectangle(tileSize/2, tileSize * 0.7, tileSize * 0.8, tileSize * 0.5, 0x8B4513).setOrigin(0.5);
+    homeContainer.add(houseBase);
+
+    // Create roof
+    const roof = this.add.triangle(tileSize/2, tileSize * 0.2, tileSize * 0.1, tileSize * 0.7, tileSize/2, tileSize * 0.1, tileSize * 0.9, tileSize * 0.7, 0xDC143C).setOrigin(0.5);
+    homeContainer.add(roof);
+
+    // Create door
+    const door = this.add.rectangle(tileSize/2, tileSize * 0.8, tileSize * 0.2, tileSize * 0.3, 0x654321).setOrigin(0.5);
+    homeContainer.add(door);
+
+    // Add home label
+    const homeLabel = this.add.text(tileSize/2, tileSize + 8, 'HOME', {
+      fontSize: '10px',
+      fill: '#ffffff',
+      align: 'center'
+    }).setOrigin(0.5);
+    homeContainer.add(homeLabel);
+
+    // Disable all input interactions on the container
+    homeContainer.inputEnabled = false;
+    homeContainer.input = null;
+
+    return homeContainer;
   }
 
   updateMapVisibility() {
@@ -403,6 +441,12 @@ export class Game extends Phaser.Scene {
     if (!this.gridResourcesConfig || !this.gridResourcesConfig.gridResources || !this.layoutConfig) {
       console.warn('Configuration not loaded yet');
       this.actionsText.setText('Actions: Configuration loading... Please wait and try again');
+      return;
+    }
+
+    // Check if this is the home position (non-interactive)
+    if (x === 2 && y === 2) {
+      this.actionsText.setText('Actions: Cannot deploy to home base!');
       return;
     }
 
